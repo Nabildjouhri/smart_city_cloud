@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 import random
 import time
+import os
 
 app = Flask(__name__)
 
@@ -32,10 +33,10 @@ def get_all_data():
 # المسار الذي يعرض بيانات منطقة واحدة فقط
 @app.route('/data/<zone>', methods=['GET'])
 def get_zone_data(zone):
-    if zone.capitalize() not in ZONES:
+    zone_cap = zone.capitalize()
+    if zone_cap not in ZONES:
         return jsonify({"error": "Zone not found", "available_zones": ZONES}), 404
-    data = generate_zone_data()[zone.capitalize()]
-    return jsonify({zone.capitalize(): data})
+    return jsonify({zone_cap: generate_zone_data()[zone_cap]})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
