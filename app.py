@@ -1,30 +1,41 @@
 from flask import Flask, jsonify
-import random, time
+import random
+import time
 
 app = Flask(__name__)
 
-# 🧠 مناطق المدينة
+# قائمة المناطق (Zones)
 ZONES = ["Centre", "Nord", "Sud"]
 
+# دالة توليد بيانات عشوائية لمحاكاة القبطورات
+def generate_zone_data():
+    data = {}
+    for zone in ZONES:
+        data[zone] = {
+            "waste": random.randint(0, 100),
+            "light": random.randint(0, 100),
+            "air": random.randint(0, 100),
+            "timestamp": int(time.time())
+        }
+    return data
+
+# الصفحة الرئيسية (اختبار فقط)
 @app.route('/')
 def home():
     return jsonify({"message": "Smart City Cloud API is running!"})
 
-# 🔁 دالة لتوليد بيانات عشوائية لكل منطقة
-def generate_zone_data(zone):
-    return {
-        "zone": zone,
-        "waste": random.randint(10, 100),   # مستوى النفايات
-        "light": random.randint(50, 100),   # مستوى الإضاءة
-        "air": random.randint(60, 100),     # جودة الهواء
-        "timestamp": int(time.time())       # الوقت الحالي
-    }
-
-# 🌍 مسار لإرجاع كل البيانات
+# المسار الذي يعرض بيانات كل المناطق
 @app.route('/data', methods=['GET'])
 def get_all_data():
-    result = {zone: generate_zone_data(zone) for zone in ZONES}
-    return jsonify(result)
+    return jsonify(generate_zone_data())
+
+# المسار الذي يعرض بيانات منطقة واحدة فقط
+@app.route('/data/<zone>', methods=['GET'])
+def get_zone_data(zone):
+    if zone.capitalize() not in ZONES:
+        return jsonify({"error": "Zone not found", "available_zones": ZONES}), 404
+    data = generate_zone_data()[zone.capitalize()]
+    return jsonify({zone.capitalize(): data})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=8080)
